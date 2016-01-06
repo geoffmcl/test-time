@@ -1,0 +1,17 @@
+Update: 
+Created: Fri Apr  8 13:13:06 CEST 2011
+
+Initial: geoff mclane - reports@geoffair.info
+
+# file : INSTALL created Fri Apr  8 13:13:06 CEST 2011 geoff mclane reports@geoffair.info
+
+Installation Instructions
+*************************
+
+Standard cmake mantra...
+~$ cd build
+~$ cmake .. [options]
+~$ make
+~$ [OPTIONAL] [sudo]make install
+
+; eof
