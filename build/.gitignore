@@ -17,3 +17,5 @@ ipch/*
 *.sdf
 *.suo
 x64/*
+libtt_utils.a
+
