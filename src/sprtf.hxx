@@ -18,6 +18,7 @@ extern int get_log_handle(void); // get log file hande (as an 'int') -1 == INVAL
 extern void flush_log_file(void);
 
 #define  VFP(a)   ( a && ( a != (FILE *)-1 ))
+#define SPRTF sprtf
 
 #ifdef   __cplusplus
 }

@@ -6,7 +6,11 @@
 
 // FEATURES ENABLED/DISABLED
 #ifdef _MSC_VER
+#ifdef WIN64
+#undef ADD_CB_DELAY
+#else
 #define ADD_CB_DELAY
+#endif
 #undef ADD_SEL_DELAY // UGH! all tests FAILED until created a socket as well!?
 #undef ADD_FILE_TEST
 #define ADD_THREAD_TEST
@@ -344,6 +348,7 @@ void thread_proc(void * vp)
 // from : http://msdn.microsoft.com/en-us/library/kdzttdcb.aspx
 void start_keyboard_thread(void)
 {
+    sprtf((char *)"Using Windows native '_beginthread' to create a thread...\n");
     uintptr_t thread = _beginthread( // NATIVE CODE
         thread_proc,    // void( __cdecl *start_address )( void * ),
         0,              // unsigned stack_size,
@@ -352,7 +357,7 @@ void start_keyboard_thread(void)
         sprtf((char *)"Failed to create thread...\n");
     } else {
         got_thread = 1;
-        sprtf((char *)"Create thread %p...\n", thread);
+        sprtf((char *)"Create thread id %p...\n", thread);
     }
 }
 #endif // #ifdef ADD_THREAD_TEST
@@ -519,7 +524,7 @@ void do_interations(void)
     win_Timer tm;
     unsigned int i = 0;
     unsigned int k = 0;
-    sprtf((char *)"Iteration test takes about 20-60 seconds+ to complete... " );
+    sprtf((char *)"\nIteration test takes about 20-60 seconds+ to complete... " );
     if (got_thread)
         sprtf((char *)"Any key to exit before...");
     sprtf((char *)"\n");
@@ -958,8 +963,6 @@ void test_usleep_delay(void)
     }
 }
 
-#ifdef _MSC_VER
-// only for WIN32
 void test_usleep_wait(void)
 {
     static char _s_tcd_buf[256];
@@ -993,6 +996,7 @@ void test_usleep_wait(void)
     }
 }
 
+#ifdef ADD_CB_DELAY     // TODO: Need to redo this in 646-bits
 #define MX_DTEST 7
 void do_short_delay_test()
 {
@@ -1050,8 +1054,8 @@ void do_short_delay_test()
     delete t3;
     delete t2;
 }
+#endif // #ifdef ADD_CB_DELAY     // TODO: Need to redo this in 646-bits
 
-#endif // #ifdef _MSC_VER
 
 int do_delay( struct timeval *ptv, int ms_delay, int *cyc, double *slept )
 {
@@ -1103,8 +1107,16 @@ int main(int argc, char * argv[])
     double begin = get_seconds();
     for ( i = 1; i < argc; i++ ) {
         arg = argv[i];
-        if (*arg == 'i')
+        if (*arg == 'i') {
             add_iter_test = 1;
+            sprtf((char *)"Will add iteration test...\n");
+        }
+        else {
+            sprtf((char *)"%s: Just a bunch of time and timer tests...\n", basename(argv[0]));
+            sprtf((char *)"Only argument is 'i', to add iteration test...\n");
+            sprtf((char *)"Unknown argument '%s'! Aborting...\n",arg);
+            return 1;
+        }
     }
     //test_max();
     char * cp;
@@ -1120,22 +1132,26 @@ int main(int argc, char * argv[])
     sprtf((char *)"Running in [%s] folder...\n", get_cwd_stg() );
 
 #ifdef _MSC_VER
-    _set_output_format( _TWO_DIGIT_EXPONENT );
+    // Now the DEFAULT - removed from <stdio.h>
+    // https://connect.microsoft.com/VisualStudio/feedback/details/1368280
+    // _set_output_format( _TWO_DIGIT_EXPONENT );
 #endif // _MSC_VER
 #ifdef ADD_THREAD_TEST
     start_keyboard_thread();    // start a thread to watch the keyboard
-    Sleep(100);
+    Sleep(10);  // sleep 10 ms, to start thread...
 #endif
 
     sprtf((char *)"Max double = %g or more precisely\n%f\n",
         std::numeric_limits<double>::max(),
         std::numeric_limits<double>::max());
 
-#ifdef _MSC_VER
 #ifdef ADD_CB_DELAY
     do_short_delay_test();
-#endif
+#else   // !#ifdef ADD_CB_DELAY
+#ifdef _MSC_VER
+    sprtf((char *)"\nShort delay test disabled! TODO: Need 64-bit short delay service...\n\n");
 #endif // #ifdef _MSC_VER
+#endif  // #ifdef ADD_CB_DELAY y/n
 
 #ifdef ADD_TIMEB_TEST
     test_timeb_main();
@@ -1185,9 +1201,7 @@ int main(int argc, char * argv[])
 
     test_clock_delay();
     test_usleep_delay();
-#ifdef _MSC_VER
     test_usleep_wait();
-#endif // #ifdef _MSC_VER
 
     // EXIT CODE
     sprtf((char *)"\n%s: ", get_datetime_str());
@@ -1226,7 +1240,7 @@ int main(int argc, char * argv[])
         get_seconds_stg(end - bgn), get_seconds_stg(slept_for), cycle_count, ms_delay );
 
 #endif // _MSC_VER
-    exit(0);
+    // exit(0);
 	return 0;
 }
 

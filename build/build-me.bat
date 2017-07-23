@@ -1,18 +1,15 @@
 @setlocal
-
-@set TMPINST=0
-@set TMPPRJ=test-time
-@set TMPSRC=..
-@set TMPBGN=%TIME%
-@set TMPINS=..\..\3rdParty
+@set TMPPRJ=test_time
 @set TMPLOG=bldlog-1.txt
+@REM 20170722 - Change to msvc140 build
+@set VCVERS=14
+@set GENERATOR=Visual Studio %VCVERS% Win64
+@set SET_BAT=%ProgramFiles(x86)%\Microsoft Visual Studio %VCVERS%.0\VC\vcvarsall.bat
+@if NOT EXIST "%SET_BAT%" goto NOBAT
+@set TMPROOT=F:\Projects
 
 @set TMPOPTS=
-@set TMPOPTS=%TMPOPTS% -DCMAKE_INSTALL_PREFIX=%TMPINS%
-@REM set TMPOPTS=%TMPOPTS% -DCMAKE_PREFIX_PATH:PATH=%TMP3RD%
-@REM set TMPOPTS=%TMPOPTS% -DBUILD_TEST:BOOL=ON
-@REM set TMPOPTS=%TMPOPTS% -DZLIB_NAMES=zlibstatic
-@REM set TMPOPTS=%TMPOPTS% -DPNG_NAMES=libpng16_static
+@set TMPOPTS=%TMPOPTS% -G "Visual Studio %VCVERS% Win64"
 
 :RPT
 @if "%~1x" == "x" goto GOTCMD
@@ -21,96 +18,69 @@
 @goto RPT
 :GOTCMD
 
-@call chkmsvc %TMPPRJ%
-@REM call chkbranch localize
-
-@echo Build %DATE% %TIME% > %TMPLOG%
-
-@if NOT EXIST %TMPSRC%\nul goto NOSRC
-
-@echo Build source %TMPSRC%... all output to build log %TMPLOG%
-@echo Build source %TMPSRC%... all output to build log %TMPLOG% >> %TMPLOG%
-
-@if NOT EXIST %TMPSRC%\CMakeLists.txt goto NOCM
-
-cmake %TMPSRC% %TMPOPTS% >> %TMPLOG% 2>&1
-@if ERRORLEVEL 1 goto ERR1
-
-cmake --build . --config Debug  >> %TMPLOG% 2>&1
-@if ERRORLEVEL 1 goto ERR2
-
-cmake --build . --config Release  >> %TMPLOG% 2>&1
-@if ERRORLEVEL 1 goto ERR3
-
-@fa4 "***" %TMPLOG%
-@call elapsed %TMPBGN%
-@echo Appears a successful build... see %TMPLOG%
-
-@echo.
-@if "%TMPINST%x" == "0x" (
-@echo No install at this time. Set TMPINST=1
-@goto END
+@if /I "%PROCESSOR_ARCHITECTURE%" EQU "AMD64" (
+@set TMPINST=%TMPROOT%\software.x64
+) ELSE (
+ @if /I "%PROCESSOR_ARCHITECTURE%" EQU "x86_64" (
+@set TMPINST=%TMPROOT%\software.x64
+ ) ELSE (
+@echo ERROR: Appears 64-bit is NOT available... aborting...
+@goto ISERR
+ )
 )
 
-@echo Continue with Release only install? Only Ctrl+c aborts...
+@call chkmsvc %TMPPRJ%
+
+@echo Build of %TMPPRJ% on %DATE% at %TIME% > %TMPLOG%
+
+@echo Doing: 'call "%SET_BAT%" %PROCESSOR_ARCHITECTURE%'
+@echo Doing: 'call "%SET_BAT%" %PROCESSOR_ARCHITECTURE%' >> %TMPLOG%
+@call "%SET_BAT%" %PROCESSOR_ARCHITECTURE% >> %TMPLOG% 2>&1
+@if ERRORLEVEL 1 goto ERR0
+
+@echo Doing: 'cmake .. %TMPOPTS%'
+@echo Doing: 'cmake .. %TMPOPTS%' >> %TMPLOG%
+@cmake .. %TMPOPTS% >> %TMPLOG% 2>&1
+@if ERRORLEVEL 1 goto ERR1
+
+@echo Doing: 'cmake --build . --config Debug'
+@echo Doing: 'cmake --build . --config Debug' >> %TMPLOG%
+@cmake --build . --config Debug >> %TMPLOG% 2>&1
+@if ERRORLEVEL 1 goto ERR2
+
+@echo Doing: 'cmake --build . --config Release'
+@echo Doing: 'cmake --build . --config Release' >> %TMPLOG%
+@cmake --build . --config Release >> %TMPLOG% 2>&1
+@if ERRORLEVEL 1 goto ERR3
 @echo.
-
-@pause
-
-@REM cmake --build . --config Debug  --target INSTALL >> %TMPLOG% 2>&1
-@REM if ERRORLEVEL 1 goto ERR4
-
-cmake --build . --config Release  --target INSTALL >> %TMPLOG% 2>&1
-@if ERRORLEVEL 1 goto ERR5
-
-@fa4 " -- " %TMPLOG%
-
-@call elapsed %TMPBGN%
-@echo All done... see %TMPLOG%
-
+@echo Appears successful build... see %TMPLOG%
+@echo.
+@echo No install at this time...
+@echo.
 @goto END
 
-:NOXD:
-@echo ERROR: Can NOT locate %TMP3RD%! Is x: driver setup? *** FIX ME ***
-@goto ISERR
-
-:NOSRC
-@echo Can NOT locate source %TMPSRC%! *** FIX ME ***
-@echo Can NOT locate source %TMPSRC%! *** FIX ME *** >> %TMPLOG%
-@goto ISERR
-
-:NOCM
-@echo Can NOT locate %TMPSRC%\CMakeLists.txt!
-@echo Can NOT locate %TMPSRC%\CMakeLists.txt! >> %TMPLOG%
+:ERR0
+@echo MSVC setup error
 @goto ISERR
 
 :ERR1
-@echo cmake configuration or generations ERROR
-@echo cmake configuration or generations ERROR >> %TMPLOG%
+@echo ERROR: CMake configure or generation...
 @goto ISERR
 
 :ERR2
-@echo ERROR: Cmake build Debug FAILED!
-@echo ERROR: Cmake build Debug FAILED! >> %TMPLOG%
+@echo ERROR: CMake build Debug..
 @goto ISERR
 
 :ERR3
-@echo ERROR: Cmake build Release FAILED!
-@echo ERROR: Cmake build Release FAILED! >> %TMPLOG%
+@echo ERROR: CMake build Release...
 @goto ISERR
 
-:ERR4
-@echo ERROR: Install Debug FAILED!
-@echo ERROR: Install Debug  FAILED! >> %TMPLOG%
-@goto ISERR
-
-:ERR5
-@echo ERROR: Install Release FAILED!
-@echo ERROR: Install Release  FAILED! >> %TMPLOG%
+:NOBAT
+@echo Can NOT locate MSVC setup batch "%SET_BAT%"! *** FIX ME ***
 @goto ISERR
 
 :ISERR
-@echo See %TMPLOG% for details...
+@echo See %TMPLOG%
 @endlocal
 @exit /b 1
 

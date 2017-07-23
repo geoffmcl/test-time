@@ -551,7 +551,24 @@ int usleep(int microseconds)
 // #endif // #ifdef USE_WAIT_OBJECT y/n
 
 #endif // _MSC_VER
+////////////////////////////////////////////////////////////////////////
+#ifndef ISDIGIT
+#define ISDIGIT(a) ((a >= '0') && (a <= '9'))
+#endif  // ISDIGIT
 
+int IsInteger(const char *arg)
+{
+    if (!arg)
+        return 0;
+    size_t ii, len = strlen(arg);
+    int c;
+    for (ii = 0; ii < len; ii++) {
+        c = arg[ii];
+        if (!ISDIGIT(c))
+            return 0;
+    }
+    return 1;
+}
 
 ////////////////////////////////////////////////////////////////////////
 

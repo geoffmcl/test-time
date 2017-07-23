@@ -1,4 +1,37 @@
+
 // test-time2.cxx
+
+/*
+    timeSetEvent function
+    Previously https://msdn.microsoft.com/en-us/library/dd757634(v=vs.85).aspx
+    Note  This function is obsolete. New applications should use CreateTimerQueueTimer to create a timer-queue timer.
+
+    
+    https://msdn.microsoft.com/en-us/library/ms682485(v=vs.85).aspx
+    BOOL WINAPI CreateTimerQueueTimer(
+    _Out_    PHANDLE             phNewTimer,
+    _In_opt_ HANDLE              TimerQueue,
+    _In_     WAITORTIMERCALLBACK Callback,
+    _In_opt_ PVOID               Parameter,
+    _In_     DWORD               DueTime,
+    _In_     DWORD               Period,
+    _In_     ULONG               Flags
+    );
+
+    VOID CALLBACK WaitOrTimerCallback(
+    _In_ PVOID   lpParameter,
+    _In_ BOOLEAN TimerOrWaitFired
+    );
+
+    BOOL WINAPI DeleteTimerQueueTimer(
+    _In_opt_ HANDLE TimerQueue,
+    _In_     HANDLE Timer,
+    _In_opt_ HANDLE CompletionEvent
+    );
+
+*/
+
+
 // ==========================================================================
 // 2011-03-26 - A precise timer implmentation
 // from : http://www.codeguru.com/cpp/w-p/system/timers/article.php/c5759/
@@ -16,16 +49,19 @@
 char * this_mod_name = (char *)__FILE__;
 
 #ifdef _MSC_VER
-
-#pragma warning( disable : 4311) // 'type cast' : pointer truncation from 'void *' to 'DWORD'
-#pragma warning( disable : 4312) // 'type cast' : conversion from 'DWORD' to 'void *' of greater size
-
 #include <Windows.h>
 #include "sprtf.hxx"
 #include "MyTimer.hxx"
 
 // Need Winmm.lib
 #pragma comment( lib, "Winmm" )
+
+#if !(defined(WIN64) || !defined(_WIN64))   // This does NOT work in 64-bit mode!
+
+#pragma warning( disable : 4311) // 'type cast' : pointer truncation from 'void *' to 'DWORD'
+#pragma warning( disable : 4312) // 'type cast' : conversion from 'DWORD' to 'void *' of greater size
+#pragma warning( disable : 4302) // 'type cast': truncation from 'PreciseTimer *const ' to 'DWORD'
+
 
 //----------------------------------------------------------------
 class PreciseTimer
@@ -34,7 +70,7 @@ public:
    PreciseTimer() : mRes(0), toLeave(false), stopCounter(-1)
    {
       InitializeCriticalSection(&crit);
-      mRes = timeSetEvent(1, 0, &TimerProc, (DWORD)this,
+      mRes = timeSetEvent(1, 0, (LPTIMECALLBACK)&TimerProc, (DWORD_PTR)this,
                           TIME_PERIODIC);
       if (!mRes) {
           fprintf(stderr,"ERROR: PreciseTimer() timeSetEvent FAILED!\n");
@@ -165,5 +201,7 @@ void shortDelay(unsigned int val)
        (100.0 - percent));
 }
 
+#endif // #if !(defined(WIN64) || !defined(_WIN64))   // This does NOT work in 64-bit mode!
 #endif // #ifdef _MSC_VER
+
 // eof - test-time2.cxx

@@ -29,7 +29,7 @@ typedef int64_t __int64;
 #ifdef _MSC_VER
 #define PF64U   "%I64u"
 #else
-#define PF64U   "%" PRIu64
+#define PF64U   "PRIu64"
 #endif
 
 extern char * GetNxtBuf( void );
@@ -48,5 +48,13 @@ extern char *get_seconds_stg( double dsecs );
 extern int usleep(int usec);
 extern int usleep_wait(int usec);
 #endif // _MSC_VER
+
+#ifndef ISDIGIT
+#define ISDIGIT(a) ((a >= '0') && (a <= '9'))
+#endif  // ISDIGIT
+
+extern int IsInteger(const char *arg);
+
+
 #endif // #ifndef _TEST_UTILS_HXX_
 // eof - test-utils.hxx
