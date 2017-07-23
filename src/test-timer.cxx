@@ -963,6 +963,7 @@ void test_usleep_delay(void)
     }
 }
 
+#ifdef _MSC_VER
 void test_usleep_wait(void)
 {
     static char _s_tcd_buf[256];
@@ -995,6 +996,7 @@ void test_usleep_wait(void)
         micro = micro / 10;
     }
 }
+#endif // #ifdef _MSC_VER
 
 #ifdef ADD_CB_DELAY     // TODO: Need to redo this in 646-bits
 #define MX_DTEST 7
@@ -1201,7 +1203,9 @@ int main(int argc, char * argv[])
 
     test_clock_delay();
     test_usleep_delay();
+#ifdef _MSC_VER
     test_usleep_wait();
+#endif // #ifdef _MSC_VER
 
     // EXIT CODE
     sprtf((char *)"\n%s: ", get_datetime_str());
