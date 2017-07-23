@@ -16,3 +16,4 @@ Win32/*
 ipch/*
 *.sdf
 *.suo
+x64/*
