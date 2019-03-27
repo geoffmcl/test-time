@@ -18,4 +18,4 @@ ipch/*
 *.suo
 x64/*
 libtt_utils.a
-
+*.VC.db
