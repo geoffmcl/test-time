@@ -104,4 +104,14 @@ if (MSVC)
 endif ()
 # install( TARGETS ${name} DESTINATION bin )
 
+set(name test-timespec)
+set(dir src)
+set(${name}_SRCS ${dir}/${name}.cxx)
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "d" )
+endif ()
+# install( TARGETS ${name} DESTINATION bin )
+
 # eof
