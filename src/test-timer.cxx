@@ -18,7 +18,9 @@
 #else
 // have NOT ported some tests
 #undef ADD_CB_DELAY
+#ifndef __MINGW32__
 #define ADD_SEL_DELAY // UGH! all tests FAILED until created a socket as well!?
+#endif // !__MINGW32__
 #undef ADD_FILE_TEST
 #undef ADD_THREAD_TEST
 #undef ADD_TIMEB_TEST
@@ -62,7 +64,7 @@
 /* ========================================= */
 #endif // ADD_SEL_DELAY
 
-#ifndef _MSC_VER
+#if !(defined(_MSC_VER) || defined(__MINGW32__))
 #include <string.h>     // for strlen()
 #include <stdint.h>     // for uint64_t
 #include <stdlib.h>     // for getenv()
@@ -187,7 +189,8 @@ void file_test(void)
 }
 #endif // #ifdef ADD_FILE_TEST
 
-#ifdef _MSC_VER
+// #ifdef _MSC_VER
+#ifdef WIN32
 #include <conio.h>
 DWORD StdinAvail() {
   static HANDLE handle = GetStdHandle(STD_INPUT_HANDLE);

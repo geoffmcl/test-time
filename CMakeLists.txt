@@ -69,6 +69,7 @@ add_library( ${name} ${${name}_SRCS} ${${name}_HDRS} )
 list(APPEND add_LIBS ${name})
 # no install of this static lib
 
+if (NOT MINGW)
 set (tt_SRCS src/test-timer.cxx 
     src/MyTimer.cxx 
     src/test-time2.cxx )
@@ -81,8 +82,9 @@ if (MSVC)
     set_target_properties(test_time PROPERTIES DEBUG_POSTFIX "d" )
 endif ()
 install( TARGETS test_time DESTINATION bin )
+endif ()
 
-if (WIN32)
+if (MSVC)
     set(name timer-queue)
     set(dir src)
     set(${name}_SRCS ${dir}/${name}.cxx)
@@ -104,6 +106,7 @@ if (MSVC)
 endif ()
 # install( TARGETS ${name} DESTINATION bin )
 
+if (NOT MINGW)
 set(name test-timespec)
 set(dir src)
 set(${name}_SRCS ${dir}/${name}.cxx)
@@ -113,5 +116,6 @@ if (MSVC)
     set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "d" )
 endif ()
 # install( TARGETS ${name} DESTINATION bin )
+endif ()
 
 # eof

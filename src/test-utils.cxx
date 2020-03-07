@@ -407,7 +407,9 @@ char * get_kdouble_with_2_sig_chars_ok_maybe( double val, int type_in, int divK,
 
 ////////////////////////////////////////////////////////////////////////
 // timing
+#ifndef __MINGW32__
 #define USE_PERF_COUNTER
+#endif // __MINGW32__
 #if (defined(WIN32) && defined(USE_PERF_COUNTER))
 // QueryPerformanceFrequency( &frequency ) ;
 // QueryPerformanceCounter(&timer->start) ;

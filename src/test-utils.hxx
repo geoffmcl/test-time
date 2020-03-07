@@ -17,7 +17,9 @@ typedef char * PTSTR;
 typedef char _TCHAR;
 #endif
 #ifndef _MSC_VER
+#ifndef __MINGW32__
 typedef int64_t __int64;
+#endif // !__MINGW32__
 #endif
 #ifndef VOID
 #define VOID void
