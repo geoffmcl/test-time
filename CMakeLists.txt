@@ -106,7 +106,7 @@ if (MSVC)
 endif ()
 # install( TARGETS ${name} DESTINATION bin )
 
-if (NOT MINGW)
+### if (NOT MINGW)
 set(name test-timespec)
 set(dir src)
 set(${name}_SRCS ${dir}/${name}.cxx)
@@ -116,6 +116,6 @@ if (MSVC)
     set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "d" )
 endif ()
 # install( TARGETS ${name} DESTINATION bin )
-endif ()
+### endif ()
 
 # eof
