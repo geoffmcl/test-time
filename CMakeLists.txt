@@ -118,4 +118,14 @@ endif ()
 # install( TARGETS ${name} DESTINATION bin )
 ### endif ()
 
+set(name test-mktime)
+set(dir src)
+set(${name}_SRCS ${dir}/${name}.c)
+add_executable( ${name} ${${name}_SRCS} )
+target_link_libraries( ${name} ${add_LIBS} )
+if (MSVC)
+    set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "d" )
+endif ()
+# install( TARGETS ${name} DESTINATION bin )
+
 # eof
