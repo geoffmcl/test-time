@@ -2,14 +2,14 @@
 @set TMPPRJ=test_time
 @set TMPLOG=bldlog-1.txt
 @REM 20170722 - Change to msvc140 build
-@set VCVERS=14
-@set GENERATOR=Visual Studio %VCVERS% Win64
-@set SET_BAT=%ProgramFiles(x86)%\Microsoft Visual Studio %VCVERS%.0\VC\vcvarsall.bat
-@if NOT EXIST "%SET_BAT%" goto NOBAT
-@set TMPROOT=F:\Projects
+@REM set VCVERS=14
+@REM set GENERATOR=Visual Studio %VCVERS% Win64
+@REM set SET_BAT=%ProgramFiles(x86)%\Microsoft Visual Studio %VCVERS%.0\VC\vcvarsall.bat
+@REM if NOT EXIST "%SET_BAT%" goto NOBAT
+@set TMPROOT=D:\UTILS
 
 @set TMPOPTS=
-@set TMPOPTS=%TMPOPTS% -G "Visual Studio %VCVERS% Win64"
+@REM set TMPOPTS=%TMPOPTS% -G "Visual Studio %VCVERS% Win64"
 
 :RPT
 @if "%~1x" == "x" goto GOTCMD
@@ -18,25 +18,10 @@
 @goto RPT
 :GOTCMD
 
-@if /I "%PROCESSOR_ARCHITECTURE%" EQU "AMD64" (
-@set TMPINST=%TMPROOT%\software.x64
-) ELSE (
- @if /I "%PROCESSOR_ARCHITECTURE%" EQU "x86_64" (
-@set TMPINST=%TMPROOT%\software.x64
- ) ELSE (
-@echo ERROR: Appears 64-bit is NOT available... aborting...
-@goto ISERR
- )
-)
 
 @call chkmsvc %TMPPRJ%
 
 @echo Build of %TMPPRJ% on %DATE% at %TIME% > %TMPLOG%
-
-@echo Doing: 'call "%SET_BAT%" %PROCESSOR_ARCHITECTURE%'
-@echo Doing: 'call "%SET_BAT%" %PROCESSOR_ARCHITECTURE%' >> %TMPLOG%
-@call "%SET_BAT%" %PROCESSOR_ARCHITECTURE% >> %TMPLOG% 2>&1
-@if ERRORLEVEL 1 goto ERR0
 
 @echo Doing: 'cmake .. %TMPOPTS%'
 @echo Doing: 'cmake .. %TMPOPTS%' >> %TMPLOG%
