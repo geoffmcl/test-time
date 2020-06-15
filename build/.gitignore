@@ -19,3 +19,7 @@ ipch/*
 x64/*
 libtt_utils.a
 *.VC.db
+test-getgz
+test-mktime
+test-timespec
+
