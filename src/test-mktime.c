@@ -32,6 +32,19 @@ DWORD get_milli_time(VOID)
     // return DWORD(nano / 10e3);
     return (DWORD)(nano * 1.0e-4);
 }
+
+
+// from : https://docs.microsoft.com/en-us/windows/win32/sysinfo/converting-a-time-t-value-to-a-file-time
+// from winnt.h
+// #define Int32x32To64(a, b)  (((__int64)((long)(a))) * ((__int64)((long)(b))))
+// #define UInt32x32To64(a, b) (((unsigned __int64)((unsigned int)(a))) * ((unsigned __int64)((unsigned int)(b))))
+void TimetToFileTime(time_t t, LPFILETIME pft)
+{
+    LONGLONG ll = Int32x32To64(t, 10000000) + 116444736000000000;
+    pft->dwLowDateTime = (DWORD)ll;
+    pft->dwHighDateTime = ll >> 32;
+}
+
 // from : https://www.gamedev.net/forums/topic/565693-converting-filetime-to-time_t-on-windows/
 // A FILETIME is the number of 100-nanosecond intervals since January 1, 1601.
 // A time_t is the number of 1 - second intervals since January 1, 1970.
