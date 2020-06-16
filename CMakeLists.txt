@@ -3,17 +3,14 @@
 # 2012/12/30 - Make it a CMake build
 # Oct 10  2009 Original cut
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.6)
 
 project (test_time)
 
 # The version number.
 set (tt_MAJOR 1)
 set (tt_MINOR 0)
-set (tt_AGE   1)
-
-# to distinguish between debug and release lib in windows
-set( CMAKE_DEBUG_POSTFIX "d" ) # little effect in unix
+set (tt_AGE   2)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(WARNING_FLAGS_CXX "-Wall")
@@ -37,12 +34,29 @@ if(WIN32)
         # foreach(warning 4244 4251 4267 4275 4290 4786 4305 4996)
         #     SET(WARNING_FLAGS "${WARNING_FLAGS} /wd${warning}")
         # endforeach(warning)
-        set(MSVC_FLAGS "-DNOMINMAX -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS -D__CRT_NONSTDC_NO_WARNINGS")
-        #if (${MSVC_VERSION} EQUAL 1600)
-        #    set( MSVC_LD_FLAGS "/FORCE:MULTIPLE" )
-        #endif (${MSVC_VERSION} EQUAL 1600)
+        # other flags: -D_SCL_SECURE_NO_WARNINGS -D__CRT_NONSTDC_NO_WARNINGS
+        set(MSVC_FLAGS "-DNOMINMAX -D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS ")
+        option( USE_STATIC_RUNTIME "Set ON to change /MD(DLL) to /MT(static)" ON )
+        if (USE_STATIC_RUNTIME)
+            set(CompilerFlags
+                CMAKE_CXX_FLAGS
+                CMAKE_CXX_FLAGS_DEBUG
+                CMAKE_CXX_FLAGS_RELEASE
+                CMAKE_C_FLAGS
+                CMAKE_C_FLAGS_DEBUG
+                CMAKE_C_FLAGS_RELEASE
+                )
+            foreach(CompilerFlag ${CompilerFlags})
+                string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+            endforeach()    
+            message(STATUS "Using /MT STATIC runtime")
+        else ()
+            message(STATUS "Using /MD DYNAMIC runtime")
+        endif ()
+        # to distinguish between debug and release lib in windows
+        set( CMAKE_DEBUG_POSTFIX "d" ) # little effect in unix
     endif(MSVC)
-    set(NOMINMAX 1)
+    # set(NOMINMAX 1)
 endif(WIN32)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS_C} ${MSVC_FLAGS} -D_REENTRANT")
