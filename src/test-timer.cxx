@@ -709,11 +709,12 @@ int     tz_minuteswest; /* minutes W of Greenwich */
 int     tz_dsttime;     /* type of dst correction */
 };
 
+static int tzflag = 0;
+
 int gettimeofday(struct timeval *tv, struct timezone *tz)
 {
   FILETIME ft;
   unsigned __int64 tmpres = 0;
-  static int tzflag;
  
   if (NULL != tv)
   {
@@ -752,20 +753,59 @@ void test_ftime(struct timeval * tv)
   tv->tv_usec = timebuf.millitm * 1000;
 }
 
+#ifdef _MSC_VER
+// From: https://stackoverflow.com/a/26085827
+static int gettimeofday_so(struct timeval* tp, struct timezone* tzp)
+{
+    static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+    SYSTEMTIME  system_time;
+    FILETIME    file_time;
+    uint64_t    time;
+
+    GetSystemTime(&system_time);
+    SystemTimeToFileTime(&system_time, &file_time);
+    time = ((uint64_t)file_time.dwLowDateTime);
+    time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+    tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+
+    // 20210319 - add this ...
+    if (NULL != tzp)
+    {
+        if (!tzflag)
+        {
+            _tzset();
+            tzflag++;
+        }
+        tzp->tz_minuteswest = _timezone / 60;
+        tzp->tz_dsttime = _daylight;
+    }
+    return 0;
+}
+#endif // _MSC_VER
+
 void test_gettimeofday_function(void)
 {
     struct timeval tv;
+    struct timeval tv1;
     struct timeval tv2;
     struct timezone tz;
+    struct timezone tz1;
     gettimeofday( &tv, &tz);
+    gettimeofday_so(&tv1, &tz1);
+    test_ftime(&tv2);
+
     sprtf((char *)"gettimeofday results...\n");
-    sprtf((char *)"timeval: tv_secs=%d tv_usecs=%d,\ntimezone: tz_minutesweat=%d, tz_dsttime=%d\n",
+    sprtf((char *)"timeval:1: tv_secs=%d tv_usecs=%d, timezone:1: tz_minutesweat=%d, tz_dsttime=%d - using GetSystemTimeAsFileTime()\n",
         tv.tv_sec, tv.tv_usec, tz.tz_minuteswest, tz.tz_dsttime );
-    test_ftime( &tv2 );
-    sprtf((char *)"timeval: tv_secs=%d tv_usecs=%d by _ftime()\n",
-        tv2.tv_sec, tv2.tv_usec );
+    sprtf((char *)"timeval:2: tv_secs=%d tv_usecs=%d, timezone:2: tz_minutesweat=%d, tz_dsttime=%d - using systemTimeToFileTime\n",
+        tv1.tv_sec, tv1.tv_usec, tz1.tz_minuteswest, tz1.tz_dsttime);
+    sprtf((char *)"timeval:3: tv_secs=%d tv_usecs=%d, timezone:1: tz_minutesweat=%d, tz_dsttime=%d - using _ftime()\n",
+        tv2.tv_sec, tv2.tv_usec, tz.tz_minuteswest, tz.tz_dsttime);
 
 }
+
 #endif // _MSC_VER
 
 #ifdef ADD_SEL_DELAY
